@@ -101,4 +101,4 @@ If you use Ethical Manifolds in your research or project, please cite it as foll
 
 ## Contact
 
-For questions, suggestions, or collaborations, please open an issue on this repository or contact [your@email.com](mailto:renatoaz@gmail.com).
+For questions, suggestions, or collaborations, please open an issue on this repository or contact [renatoaz@gmail.com](mailto:renatoaz@gmail.com).
