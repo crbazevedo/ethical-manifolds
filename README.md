@@ -1,6 +1,33 @@
 # Ethical Manifolds
 
-This repository introduces the concept of Ethical Manifolds, a novel approach to evaluating text based on various ethical principles using embedding models and classifiers.
+Ethical Manifolds is a project that aims to analyze and classify text based on ethical dimensions using deep learning.
+
+## Architecture
+
+The project uses a modular architecture with the following main components:
+
+1. **EthicalManifold**: The main class that orchestrates the entire process.
+2. **EmbeddingManager**: Handles text tokenization and embedding using FastText.
+3. **ClassifierManager**: Manages multiple ethical dimension classifiers.
+4. **EthicalClassifierModel**: The neural network model for classification.
+
+Here's a high-level overview of the architecture:
+```mermaid
+graph TD;
+A[train_and_test.py] --> B[EthicalManifold]
+B --> C[EmbeddingManager]
+B --> D[ClassifierManager]
+C --> E[FastText Model]
+D --> G[EthicalClassifierModel]
+G --> H[Conv1D]
+H --> I[GlobalMaxPooling1D]
+I --> J[Dense Layers]
+A -->|"X_train, y_train"| B
+B -->|"embed_texts(X)"| C
+C -->|"tokenize(text)"| E
+E -->|"word vectors"| G
+G -->|"embeddings"| H
+```
 
 ## What are Ethical Manifolds?
 
@@ -14,13 +41,10 @@ Ethical Manifolds are a multi-dimensional ethical space where texts can be posit
 
 ## Key Features
 
-- Ethical embedding space: Represent texts in a multi-dimensional ethical space
-- Multiple ethical perspectives: Analyze text from various ethical frameworks simultaneously
-- Quantitative scoring: Provide numerical scores for each ethical dimension
-- Visualization: Ability to visualize texts in the ethical manifold space
-- Efficient inference: Fast scoring of new texts using pre-computed embeddings
-- Customizable: Train classifiers for specific use cases or additional ethical principles
-- Scalable: Designed to handle large volumes of text for comprehensive ethical analysis
+- Utilizes pre-trained FastText embeddings for robust word representation
+- Implements a CNN-based classifier for each ethical dimension
+- Supports multiple ethical dimensions (e.g., fairness, utility, virtue)
+- Provides visualization tools for embedding analysis and ethical scores
 
 ## How It Works
 
@@ -56,19 +80,34 @@ Here's a basic example of how to use Ethical Manifolds:
 
 ```python
 from ethical_manifolds import EthicalManifold
-Initialize the Ethical Manifold
+#Initialize the Ethical Manifold
 manifold = EthicalManifold()
-Analyze a text
+#Analyze a text
 text = "AI should be developed with careful consideration of its ethical implications."
 results = manifold.analyze(text)
-Print the results
+#Print the results
 for dimension, score in results.items():
 print(f"{dimension}: {score}")
-Visualize the text in the ethical space (if visualization is enabled)
+#Visualize the text in the ethical space (if visualization is enabled)
 manifold.visualize(text)
 ```
 
 For more detailed usage instructions and advanced features, please refer to the [documentation](docs/README.md).
+
+## Ethical Dimensions
+
+The project currently supports the following ethical dimensions:
+- Fairness Score
+- Utility Score
+- Virtue Score
+
+## Model Architecture
+
+The `EthicalClassifierModel` uses a Convolutional Neural Network (CNN) architecture:
+1. Input layer accepting FastText word embeddings
+2. Convolutional layer (Conv1D)
+3. Global Max Pooling layer
+4. Dense layers for classification
 
 ## Contributing
 
