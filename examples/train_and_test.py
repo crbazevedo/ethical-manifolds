@@ -111,8 +111,9 @@ def main():
 
         # Evaluate the model
         print("Evaluating the model...")
-        accuracy = manifold.evaluate(X_test, y_test)
-        print(f"Model accuracy: {accuracy:.2f}")
+        accuracies = manifold.evaluate(X_test, y_test)
+        for dimension, accuracy in accuracies.items():
+            print(f"Model accuracy for {dimension}: {accuracy:.2f}")
 
         print("Train and test process completed successfully.")
 

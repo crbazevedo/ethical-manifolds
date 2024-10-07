@@ -1,50 +1,49 @@
-from .models.embedding_model import EthicalEmbeddingModel
 import numpy as np
-from tensorflow import keras
-import tensorflow as tf
+import fasttext.util
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+import ssl
+import certifi
+import os
 
 class EmbeddingManager:
-    def __init__(self, vocab_size=10000, embedding_dim=100, max_length=200):
-        self.vocab_size = vocab_size
-        self.embedding_dim = embedding_dim
+    def __init__(self, max_length=200, model_lang='en'):
+        # Disable SSL verification (not recommended for production)
+        ssl._create_default_https_context = ssl._create_unverified_context
+        
+        # Now download the model
+        fasttext.util.download_model(model_lang, if_exists='ignore')
+        self.ft_model = fasttext.load_model(f'cc.{model_lang}.300.bin')
         self.max_length = max_length
-        
-        # Create TextVectorization layer
-        self.tokenizer = keras.layers.TextVectorization(
-            max_tokens=vocab_size,
-            output_sequence_length=max_length,
-            output_mode='int'
-        )
-        
-        # Create embedding layer
-        self.embedding = keras.layers.Embedding(
-            input_dim=vocab_size,
-            output_dim=embedding_dim,
-            mask_zero=True
-        )
-
-    def fit_tokenizer(self, texts):
-        print("Fitting tokenizer on texts:", texts[:5])
-        self.tokenizer.adapt(texts)
+        self.embedding_dim = self.ft_model.get_dimension()
 
     def tokenize(self, text):
-        return self.tokenizer([text])
+        # FastText works directly with text, so we just need to split into words
+        return text.lower().split()
 
-    def embed(self, tokenized_texts):
-        return self.embedding(tokenized_texts)
+    def embed(self, tokens):
+        # Generate embeddings for each token
+        embeddings = [self.ft_model.get_word_vector(token) for token in tokens]
+        # Pad or truncate to max_length
+        if len(embeddings) > self.max_length:
+            embeddings = embeddings[:self.max_length]
+        elif len(embeddings) < self.max_length:
+            padding = [np.zeros(self.embedding_dim) for _ in range(self.max_length - len(embeddings))]
+            embeddings.extend(padding)
+        return np.array(embeddings)
 
-    def pad_sequences(self, sequences):
-        return tf.keras.preprocessing.sequence.pad_sequences(
-            sequences, 
-            maxlen=self.max_length, 
-            padding='post', 
-            truncating='post'
-        )
+    def embed_texts(self, texts):
+        return np.array([self.embed(self.tokenize(text)) for text in texts])
 
-# Initialize the embedding manager
-embedding_manager = EmbeddingManager(vocab_size=10000, embedding_dim=100, max_length=200)
+    @property
+    def vocab_size(self):
+        return len(self.ft_model.get_words())
 
-def get_embedding(text):
-    tokenized = embedding_manager.tokenize(text)
-    embedded = embedding_manager.embed(tokenized)
-    return embedded.numpy()[0]  # Return the full sequence of embeddings
+    def save(self, dirpath):
+        os.makedirs(dirpath, exist_ok=True)
+        np.save(os.path.join(dirpath, "max_length.npy"), self.max_length)
+        # We don't need to save the FastText model as it's pre-trained and can be reloaded
+
+    @classmethod
+    def load(cls, dirpath, model_lang='en'):
+        max_length = np.load(os.path.join(dirpath, "max_length.npy"))
+        return cls(max_length=max_length, model_lang=model_lang)
