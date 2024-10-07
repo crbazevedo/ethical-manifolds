@@ -48,3 +48,15 @@ wheels/
 
 # Logs
 *.log
+# Ignore common data and model file types
+*.h5
+*.npy
+*.json
+*.png
+
+# Ignore specific directories
+trained_model/**/*.h5
+results/**/*.png
+results/**/*.json
+outputs/**/*.npy
+weights/**/*.h5
